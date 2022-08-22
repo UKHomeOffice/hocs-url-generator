@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Case extract generator</title>
+	<style>
+		div { margin:1em; }
+		label { display: block; }
+		fieldset, output { display: inline-block; }
+		fieldset label { display: inline; }
+		input:invalid { outline: 3px solid red; }
+		output {margin: 1em; font-family: monospace; background-color: #c0ffee; padding 1em;}
+		output:empty {display: none}
+		p { font-style: italic; }
+	</style>
+	</head>
+	<body>
+    <h1>Case type extract URL generator</h1>
+		<noscript>You need JavaScript enabled to use this tool.</noscript>
+
+    <form id="form">
+			<div>
+				<label for="environment">Environment (e.g. &ldquo;cs-demo&rdquo;)</label>
+				<input id="environment" name="environment" type="text" pattern='[a-z]*cs-[a-z]+'>
+			</div>
+
+			<div>
+				<label for="caseType">caseType (e.g. &ldquo;MIN&rdquo;)</label>
+				<input id="caseType" name="caseType" type="text" pattern='[A-Za-z]+'>
+			</div>
+
+			<div>
+				<label for="exportType">Export type (e.g. &ldquo;case notes&rdquo;</label>
+				<input id="exportType" name="caseType" type="text" pattern='[A-Za-z _]+'>
+			</div>
+
+			<div>
+				<label for="fromDate">From date</label>
+				<input type="date" name="fromDate" id="fromDate">
+			</div>
+
+			<div>
+				<label for="toDate">To date</label>
+				<input type="date" name="toDate" id="toDate">
+			</div>
+
+			<details>
+				<summary>Advanced options</summary>
+				<div>
+					<label for="timestampFormat">Timestamp format</label>
+					<input name="timestampFormat" id="timestampFormat" type="text" placeholder="yyyy-MM-dd">
+				</div>
+				<div>
+					<label for="timeZoneId">Timezone</label>
+					<input type="text" id="timeZoneId" name="timeZoneId" placeholder="Europe/London" pattern="[A-Z][a-z]+/[A-Z][a-z]">
+				</div>
+				<div>
+					<fieldset>
+						<legend>Convert UUIds?</legend>
+						<label for="convertY">Yes</label>
+						<input id="convertY" name="convert" type="radio" value="true">
+						<label for="convertN">No</label>
+						<input id="convertN" name="convert" type="radio" value="false">
+					</fieldset>
+				</div>
+			</details>
+			<output name="external" id="external"></output>
+			<output name="internal" id="internal"></output>
+		</form>
+		<script>
+			form.oninput = () => {
+				const external = document.getElementById('external')
+
+				const envname = environment.value.split('-')[1].toLowerCase() ?? ''
+				const envtype = environment.value.split('-')[0].toLowerCase() == 'wcs'? 'wcs' : 'cs'
+
+				let params = new URLSearchParams()
+				params.set('exportType', exportType.value.toUpperCase().replace(/\s+/, '_'))
+				if(fromDate.value) params.set('fromDate', fromDate.value)
+				if(timeZoneId.value) params.set('timeZoneId', timeZoneId.value)
+				if(timestampFormat.value) params.set('timestampFormat', timestampFormat.value)
+				if(toDate.value) params.set('fromDate', toDate.value)
+				if(convertY.checked) params.set('convert', true)
+				if(convertN.checked) params.set('convert', false)
+				let domain = envname == 'prod' ? envtype : `${envname}.${envtype}-notprod`
+				external.textContent = `https://${domain}.homeoffice.gov.uk/export/${caseType.value.toUpperCase()}?${params.toString()}`
+				if (envname === 'prod' || envname === 'demo' ) {
+					internal.textContent = null
+				} else {
+					let idomain = `${envname}.internal.${envtype}-notprod`
+					internal.textContent = `https://${idomain}.homeoffice.gov.uk/export/${caseType.value.toUpperCase()}?${params.toString()}`
+				}
+			}
+			document.onload = form.oninput
+	</script>
+	</body>
+</html>
