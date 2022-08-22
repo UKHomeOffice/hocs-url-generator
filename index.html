@@ -5,11 +5,11 @@
     <title>Case extract generator</title>
     <style>
       div { margin:1em; }
-      label { display: block; }
-      fieldset, output { display: inline-block; }
       fieldset label { display: inline; }
+      fieldset, output { display: inline-block; }
       input:invalid { outline: 3px solid red; }
-      output {margin: 1em; font-family: monospace; background-color: #c0ffee; padding 1em;}
+      label { display: block; }
+      output {margin: 1em; font-family: monospace; background-color: #c0ffee; padding: 1em;}
       output:empty {display: none}
       p { font-style: italic; }
     </style>
@@ -25,12 +25,12 @@
       </div>
 
       <div>
-        <label for="caseType">caseType (e.g. &ldquo;MIN&rdquo;)</label>
+        <label for="caseType">Case type (e.g. &ldquo;MIN&rdquo;)</label>
         <input id="caseType" name="caseType" type="text" pattern='[A-Za-z]+'>
       </div>
 
       <div>
-        <label for="exportType">Export type (e.g. &ldquo;case notes&rdquo;</label>
+        <label for="exportType">Export type (e.g. &ldquo;case notes&rdquo;)</label>
         <input id="exportType" name="caseType" type="text" pattern='[A-Za-z _]+'>
       </div>
 
@@ -56,7 +56,7 @@
         </div>
         <div>
           <fieldset>
-            <legend>Convert UUIds?</legend>
+            <legend>Convert UUIDs?</legend>
             <label for="convertY">Yes</label>
             <input id="convertY" name="convert" type="radio" value="true">
             <label for="convertN">No</label>
@@ -72,26 +72,26 @@
         const external = document.getElementById('external')
 
         const envname = environment.value.split('-')[1].toLowerCase() ?? ''
-        const envtype = environment.value.split('-')[0].toLowerCase() == 'wcs'? 'wcs' : 'cs'
+        const envtype = environment.value.split('-')[0].toLowerCase() == 'wcs' ? 'wcs' : 'cs'
 
-        let params = new URLSearchParams()
+        const params = new URLSearchParams()
         params.set('exportType', exportType.value.toUpperCase().replace(/\s+/, '_'))
-        if(fromDate.value) params.set('fromDate', fromDate.value)
-        if(timeZoneId.value) params.set('timeZoneId', timeZoneId.value)
-        if(timestampFormat.value) params.set('timestampFormat', timestampFormat.value)
-        if(toDate.value) params.set('fromDate', toDate.value)
-        if(convertY.checked) params.set('convert', true)
-        if(convertN.checked) params.set('convert', false)
-        let domain = envname == 'prod' ? envtype : `${envname}.${envtype}-notprod`
+        if (fromDate.value) params.set('fromDate', fromDate.value)
+        if (timeZoneId.value) params.set('timeZoneId', timeZoneId.value)
+        if (timestampFormat.value) params.set('timestampFormat', timestampFormat.value)
+        if (toDate.value) params.set('fromDate', toDate.value)
+        if (convertY.checked) params.set('convert', true)
+        if (convertN.checked) params.set('convert', false)
+        const domain = envname == 'prod' ? envtype : `${envname}.${envtype}-notprod`
         external.textContent = `https://${domain}.homeoffice.gov.uk/export/${caseType.value.toUpperCase()}?${params.toString()}`
-        if (envname === 'prod' || envname === 'demo' ) {
+        if (envname === 'prod' || envname === 'demo') {
           internal.textContent = null
         } else {
-          let idomain = `${envname}.internal.${envtype}-notprod`
+          const idomain = `${envname}.internal.${envtype}-notprod`
           internal.textContent = `https://${idomain}.homeoffice.gov.uk/export/${caseType.value.toUpperCase()}?${params.toString()}`
         }
       }
-      document.onload = form.oninput
+      document.onload = form.oninput()
   </script>
   </body>
 </html>
